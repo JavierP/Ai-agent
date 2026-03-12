@@ -17,17 +17,4 @@ for test in test_cases:
     else:
         print(f"Length: {t_len}")
         print(f"End of result: {test[-100:]}")
-
-
-
-
-'''print("Result for current File:")
-print(f"{get_file_content('calculator', 'lorem.txt')}\n")
-print("Result for current File:")
-print(f"{get_file_content('calculator', 'main.py')}\n")
-print("Result for current File:")
-print(f"{get_file_content('calculator', 'pkg/calculator.py')}\n")
-print("Result for current File:")
-print(f"{get_file_content('calculator', '/bin/cat')}\n")
-print("Result for current File:")
-print(f"{get_file_content('calculator', 'pkg/does_not_exist.py')}\n")'''
+        

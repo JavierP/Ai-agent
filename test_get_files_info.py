@@ -1,10 +1,13 @@
 from functions.get_files_info import get_files_info
 
-print("Result for current directory:")
-print(f"{get_files_info('calculator', '.')}\n")
-print("Result for current directory:")
-print(f"{get_files_info('calculator', 'pkg')}\n")
-print("Result for current directory:")
-print(f"{get_files_info('calculator', '/bin')}\n")
-print("Result for current directory:")
-print(f"{get_files_info('calculator', '../')}\n")
+test_cases = [
+    get_files_info('calculator', '.'),
+    get_files_info('calculator', 'pkg'),
+    get_files_info('calculator', '/bin'),
+    get_files_info('calculator', '../')
+]
+
+for test in test_cases:
+    print("Result for current directory:")
+    print(f"{test}\n")
+    
