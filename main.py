@@ -3,7 +3,8 @@ import argparse
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
-
+from prompts import system_prompt
+from call_function import available_functions, call_function
 
 
 def main():
@@ -28,13 +29,23 @@ def main():
 
     #Get a resonse
     response = client.models.generate_content(
-        model='gemini-2.5-flash', contents=messages
+        model='gemini-2.5-flash',
+        contents=messages,
+        config=types.GenerateContentConfig(
+            tools=[available_functions],
+            system_instruction=system_prompt
+        )
     )
     if response.usage_metadata == None:
         raise RuntimeError("Metadata Issue")
-    if args.verbose:
+    elif args.verbose:
         print(f"User prompt: {args.user_prompt}\nPrompt tokens: {response.usage_metadata.prompt_token_count}\nResponse tokens: {response.usage_metadata.candidates_token_count}")
-    print(response.text)
+    elif not response.function_calls == None:
+        for func in response.function_calls:
+            print(f"Calling function: {func.name}({func.args})")
+            function_call_result = 
+    else:
+        print(response.text)
 
 
 if __name__ == "__main__":
