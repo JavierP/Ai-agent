@@ -38,12 +38,24 @@ def main():
     )
     if response.usage_metadata == None:
         raise RuntimeError("Metadata Issue")
-    elif args.verbose:
+    if args.verbose:
         print(f"User prompt: {args.user_prompt}\nPrompt tokens: {response.usage_metadata.prompt_token_count}\nResponse tokens: {response.usage_metadata.candidates_token_count}")
-    elif not response.function_calls == None:
+    if not response.function_calls == None:
+        function_responses = []
         for func in response.function_calls:
-            print(f"Calling function: {func.name}({func.args})")
-            function_call_result = 
+            function_call_result = call_function(func, args.verbose)
+            if not function_call_result.parts:
+                raise Exception("Function_call is empty")
+            if not function_call_result.parts[0].function_response:
+                raise Exception("Function_response is None")
+            if not function_call_result.parts[0].function_response.response:
+                raise Exception("Function response is None")
+            function_responses.append(function_call_result.parts[0])
+            if args.verbose:
+                print(f"-> {function_call_result.parts[0].function_response.response}")
+
+
+
     else:
         print(response.text)
 
