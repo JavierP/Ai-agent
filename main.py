@@ -1,5 +1,6 @@
 import os
 import argparse
+import sys
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
@@ -27,37 +28,45 @@ def main():
 
     messages = [types.Content(role="user", parts=[types.Part(text=args.user_prompt)])]
 
-    #Get a resonse
-    response = client.models.generate_content(
-        model='gemini-2.5-flash',
-        contents=messages,
-        config=types.GenerateContentConfig(
-            tools=[available_functions],
-            system_instruction=system_prompt
+    for _ in range(20):
+        #Get a resonse
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=messages,
+            config=types.GenerateContentConfig(
+                tools=[available_functions],
+                system_instruction=system_prompt
+            )
         )
-    )
-    if response.usage_metadata == None:
-        raise RuntimeError("Metadata Issue")
-    if args.verbose:
-        print(f"User prompt: {args.user_prompt}\nPrompt tokens: {response.usage_metadata.prompt_token_count}\nResponse tokens: {response.usage_metadata.candidates_token_count}")
-    if not response.function_calls == None:
-        function_responses = []
-        for func in response.function_calls:
-            function_call_result = call_function(func, args.verbose)
-            if not function_call_result.parts:
-                raise Exception("Function_call is empty")
-            if not function_call_result.parts[0].function_response:
-                raise Exception("Function_response is None")
-            if not function_call_result.parts[0].function_response.response:
-                raise Exception("Function response is None")
-            function_responses.append(function_call_result.parts[0])
-            if args.verbose:
-                print(f"-> {function_call_result.parts[0].function_response.response}")
-
-
-
+        if response.usage_metadata == None:
+            raise RuntimeError("Metadata Issue")
+        if args.verbose:
+            print(f"User prompt: {args.user_prompt}\nPrompt tokens: {response.usage_metadata.prompt_token_count}\nResponse tokens: {response.usage_metadata.candidates_token_count}")
+        if response.candidates:
+            for candidate in response.candidates:
+                if candidate.content:
+                    messages.append(candidate.content)
+        if not response.function_calls == None:
+            function_responses = []
+            for func in response.function_calls:
+                function_call_result = call_function(func, args.verbose)
+                if not function_call_result.parts:
+                    raise Exception("Function_call is empty")
+                if not function_call_result.parts[0].function_response:
+                    raise Exception("Function_response is None")
+                if not function_call_result.parts[0].function_response.response:
+                    raise Exception("Function response is None")
+                function_responses.append(function_call_result.parts[0])
+                if args.verbose:
+                    print(f"-> {function_call_result.parts[0].function_response.response}")
+            messages.append(types.Content(role="user", parts=function_responses))
+        else:
+            print(response.text)
+            break
     else:
-        print(response.text)
+        print("Maximum iterations reached without a final response")
+        sys.exit(1)
+
 
 
 if __name__ == "__main__":
